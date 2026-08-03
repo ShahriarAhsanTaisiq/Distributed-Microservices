@@ -3,6 +3,7 @@ package com.distributed_mircorservice.orderservice.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
@@ -26,5 +27,14 @@ public class AppConfig {
 //
 //        return new RestTemplate(factory);
 //    }
+
+    @Bean
+    public RestClient getRestClient(){
+        // Introduced in Spring framework 6.0+ and Spring Boot 3.0+
+        // Synchronous / Blocking in nature means client wait for response from the server side.
+        // Modern. (Fluent Based API) that is more readable and easy to maintain
+        return RestClient.create(); // Internally it is calling RestClient.builder().build(), this create a new object of restclient.
+
+    }
 
 }
