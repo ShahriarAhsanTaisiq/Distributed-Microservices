@@ -1,6 +1,7 @@
 package com.distributed_mircorservice.orderservice.controller;
 
 import com.distributed_mircorservice.orderservice.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,17 +13,27 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     private final OrderService orderService;
+    private final ProductClient productClient;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, ProductClient productClient) {
         this.orderService = orderService;
+        this.productClient = productClient;
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<String> getOrder(@PathVariable Integer id) {
 
-        String response = orderService.getOrderDtl(id);
+        String response = productClient.getProductById(id);
+        System.out.println("Response from Product Service call from Order Service: " + response);
         return ResponseEntity.ok("Order call successful. " + response);
     }
+
+//    @GetMapping("/{id}")
+//    public ResponseEntity<String> getOrder(@PathVariable Integer id) {
+//
+//        String response = orderService.getOrderDtl(id);
+//        return ResponseEntity.ok("Order call successful. " + response);
+//    }
 
     /****** Only Java based Http connection and API Request *******/
 //        HttpURLConnection httpURLConnection = null;
