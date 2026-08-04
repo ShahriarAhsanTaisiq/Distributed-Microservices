@@ -8,5 +8,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 url = "${product.service.base-url}")
 public interface ProductClient {
     @GetMapping("/products/{id}")
-    public String  getProductById(@PathVariable Integer id);
+    String  getProductById(@PathVariable Integer id);
 }
