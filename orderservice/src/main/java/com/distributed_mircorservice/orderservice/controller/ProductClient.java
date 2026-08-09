@@ -4,8 +4,16 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "product-service",
-url = "${product.service.base-url}")
+// Without Service Discovery
+//@FeignClient(name = "product-service",
+//url = "${product.service.base-url}")
+//public interface ProductClient {
+//    @GetMapping("/products/{id}")
+//    String  getProductById(@PathVariable Integer id);
+//}
+
+// With Service Discovery Enable
+@FeignClient(name = "productservice")
 public interface ProductClient {
     @GetMapping("/products/{id}")
     String  getProductById(@PathVariable Integer id);
