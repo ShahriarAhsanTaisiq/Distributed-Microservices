@@ -1,9 +1,14 @@
 package com.distributed_mircorservice.orderservice.service;
 
+import com.netflix.discovery.DiscoveryClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
+import org.w3c.dom.stylesheets.LinkStyle;
+
+import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -23,15 +28,16 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public String getOrderDtl(Integer id) {
 
-        // invoke product API through RestTemple Approach
-//        String response = restTemplate.getForObject(baseUrl+ "/products/{id}", String.class, id); // RestTemplate
+//         invoke product API through RestTemple Approach
 
-        // RestClient request
-        String response =  restClient
-                .get()
-                        .uri(baseUrl+ "/products/{id}", id)
-                                .retrieve()
-                                        .body(String.class);
+        String response = restTemplate.getForObject(baseUrl+ "/products/{id}", String.class, id); // RestTemplate
+
+//        // RestClient request
+//        String response =  restClient
+//                .get()
+//                        .uri(baseUrl+ "/products/{id}", id)
+//                                .retrieve()
+//                                        .body(String.class);
         System.out.println("Response from Product Service call from Order Service: " + response);
         return response;
     }

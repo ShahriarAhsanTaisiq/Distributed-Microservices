@@ -20,20 +20,20 @@ public class OrderController {
         this.productClient = productClient;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<String> getOrder(@PathVariable Integer id) {
-
-        String response = productClient.getProductById(id);
-        System.out.println("Response from Product Service call from Order Service: " + response);
-        return ResponseEntity.ok("Order call successful. " + response);
-    }
-
 //    @GetMapping("/{id}")
 //    public ResponseEntity<String> getOrder(@PathVariable Integer id) {
 //
-//        String response = orderService.getOrderDtl(id);
+//        String response = productClient.getProductById(id);
+//        System.out.println("Response from Product Service call from Order Service: " + response);
 //        return ResponseEntity.ok("Order call successful. " + response);
 //    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<String> getOrder(@PathVariable Integer id) {
+
+        String response = orderService.getOrderDtl(id);
+        return ResponseEntity.ok("Order call successful. " + response);
+    }
 
     /****** Only Java based Http connection and API Request *******/
 //        HttpURLConnection httpURLConnection = null;
