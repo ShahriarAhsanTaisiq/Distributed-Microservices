@@ -35,6 +35,11 @@ public class OrderController {
         return ResponseEntity.ok("Order call successful. " + response);
     }
 
+    @GetMapping("/loadBalancer/{id}")
+    public void getProductInfo(@PathVariable Integer id) {
+        orderService.invokeProductAPI(id);
+    }
+
     /****** Only Java based Http connection and API Request *******/
 //        HttpURLConnection httpURLConnection = null;
 //        try{
