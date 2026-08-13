@@ -12,12 +12,12 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableFeignClients
 // When we want to change LoadBalance Default Round Robin Algorithms to Random Load Balancer Algorithms (For One Service only)
-//@LoadBalancerClient(name = "productservice", configuration = LoadBalancerProductClientConfig.class)
+//@LoadBalancerClient(name = "product-service", configuration = LoadBalancerProductClientConfig.class)
 
 // This is for Multiple services multiple load balancer algorithms
 @LoadBalancerClients( defaultConfiguration = LoadBalancerGlobalConfig.class,
         value = {
-                @LoadBalancerClient(name = "productservice", configuration = LoadBalancerProductClientConfig.class)
+                @LoadBalancerClient(name = "product-service", configuration = LoadBalancerProductClientConfig.class)
                 // Here you can add others with comma seperated.
         }
 )

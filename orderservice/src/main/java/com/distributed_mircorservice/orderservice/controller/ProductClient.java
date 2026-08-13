@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 //}
 
 // With Service Discovery Enable
-@FeignClient(name = "productservice")
+@FeignClient(
+        name = "product-service"
+)
 public interface ProductClient {
     @GetMapping("/products/{id}")
     String  getProductById(@PathVariable Integer id);

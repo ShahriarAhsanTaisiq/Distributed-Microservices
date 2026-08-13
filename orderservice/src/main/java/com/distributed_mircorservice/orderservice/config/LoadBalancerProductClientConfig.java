@@ -5,15 +5,22 @@ import org.springframework.cloud.loadbalancer.core.RandomLoadBalancer;
 import org.springframework.cloud.loadbalancer.core.ReactorLoadBalancer;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class LoadBalancerProductClientConfig {
 
-    ReactorLoadBalancer<ServiceInstance> productClientLoadBalancer(LoadBalancerClientFactory clientFactory) {
+    @Bean
+    public ReactorLoadBalancer<ServiceInstance> productClientLoadBalancer(
+            LoadBalancerClientFactory clientFactory) {
+
         return new RandomLoadBalancer(
-                clientFactory.getLazyProvider("productservice", ServiceInstanceListSupplier .class
+                clientFactory.getLazyProvider(
+                        "product-service",
+                        ServiceInstanceListSupplier.class
                 ),
-                "productservice");
+                "product-service"
+        );
     }
 }
