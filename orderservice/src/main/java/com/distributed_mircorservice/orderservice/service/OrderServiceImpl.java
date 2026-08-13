@@ -54,6 +54,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public void rateLimiterFallBack(Integer id, Throwable ex) {
-        System.out.println("Falling back from Product Service call from Order Service. Try later");
+        System.out.println(
+                "Rate limit exceeded for product id: " + id
+        );
+        System.out.println(
+                "Exception: " + ex.getMessage()
+        );
     }
 }
