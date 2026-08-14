@@ -2,6 +2,7 @@ package com.distributed_mircorservice.orderservice.service;
 
 import com.distributed_mircorservice.orderservice.controller.ProductClient;
 import com.netflix.discovery.DiscoveryClient;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,20 +46,39 @@ public class OrderServiceImpl implements OrderService {
         System.out.println("Response from Product Service call from Order Service: " + response);
         return response;
     }
+//
+//    @Override
+//    // This is for RateLimiter Approach
+//    @RateLimiter(name = "productRateLimiter", fallbackMethod = "rateLimiterFallBack")
+//    public void invokeProductAPI(Integer id) {
+//        String response = productClient.getProductById(id);
+//        System.out.println("Response from Product Service call from Order Service: " + response);
+//    }
+
+//    public void rateLimiterFallBack(Integer id, Throwable ex) {
+//        System.out.println(
+//                "Rate limit exceeded for product id: " + id
+//        );
+//        System.out.println(
+//                "Exception: " + ex.getMessage()
+//        );
+//    }
 
     @Override
-    @RateLimiter(name = "productRateLimiter", fallbackMethod = "rateLimiterFallBack")
+    // This is for Bulkhead Semaphore Approach
+    @Bulkhead(name = "productService", type = Bulkhead.Type.SEMAPHORE, fallbackMethod = "bulkHeadFallBack")
     public void invokeProductAPI(Integer id) {
         String response = productClient.getProductById(id);
         System.out.println("Response from Product Service call from Order Service: " + response);
     }
 
-    public void rateLimiterFallBack(Integer id, Throwable ex) {
-        System.out.println(
-                "Rate limit exceeded for product id: " + id
-        );
-        System.out.println(
-                "Exception: " + ex.getMessage()
-        );
+
+
+    public void bulkHeadFallBack(Integer id, Throwable ex) {
+
+        System.out.println("========== BULKHEAD FALLBACK ==========");
+        System.out.println("Product ID: " + id);
+        System.out.println("Exception: " + ex.getClass().getName());
+        System.out.println("Message: " + ex.getMessage());
     }
 }
