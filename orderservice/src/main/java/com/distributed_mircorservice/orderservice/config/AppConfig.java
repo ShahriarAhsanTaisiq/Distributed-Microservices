@@ -1,6 +1,11 @@
 package com.distributed_mircorservice.orderservice.config;
 
+import io.github.resilience4j.core.IntervalFunction;
+import io.github.resilience4j.retry.RetryConfig;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.core.IntervalFunction;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -37,6 +42,35 @@ public class AppConfig {
         // Modern. (Fluent Based API) that is more readable and easy to maintain
         return RestClient.create(); // Internally it is calling RestClient.builder().build(), this create a new object of restclient.
 
+    }
+
+    // Custom Retry
+    @Bean
+    public Retry customRetry(){
+//        // Here I use fixed 2s delay retry
+//        IntervalFunction fibonacciIntervalFunction = attempt -> {
+//            return 2000L;
+//        };
+
+        // This one is fibonacci delay start from 2s
+        IntervalFunction fibonacciIntervalFunction = attempt -> {
+            int previous = 0;
+            int current = 1;
+
+            for (int i = 1; i < attempt; i++) {
+                int next = previous + current;
+                previous = current;
+                current = next;
+            }
+
+            return current * 2000L;
+        };
+        RetryConfig config = RetryConfig.custom()
+                .maxAttempts(6)
+                .intervalFunction(fibonacciIntervalFunction)
+                .retryExceptions(Exception.class)
+                .build();
+        return Retry.of("customRetry", config);
     }
 
 }
