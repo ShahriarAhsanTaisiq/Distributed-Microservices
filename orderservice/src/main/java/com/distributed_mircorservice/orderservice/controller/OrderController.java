@@ -1,5 +1,6 @@
 package com.distributed_mircorservice.orderservice.controller;
 
+import com.distributed_mircorservice.orderservice.model.Order;
 import com.distributed_mircorservice.orderservice.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -129,5 +130,19 @@ public class OrderController {
         String response = orderService.invokeUsingHttpURLConnection(id);
 
         return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/gateway/{id}")
+    public ResponseEntity<Order> getOrderForGateway(
+            @PathVariable Integer id) {
+
+        Order order = new Order(
+                id,
+                10,
+                2
+        );
+
+        return ResponseEntity.ok(order);
     }
 }

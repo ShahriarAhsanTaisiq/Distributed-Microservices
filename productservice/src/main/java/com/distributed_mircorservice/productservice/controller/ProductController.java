@@ -1,6 +1,8 @@
 package com.distributed_mircorservice.productservice.controller;
 
+import com.distributed_mircorservice.productservice.model.Product;
 import com.distributed_mircorservice.productservice.service.ProductService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,5 +22,18 @@ public class ProductController {
     public String getProduct(@PathVariable Long id){
 
         return productService.getProductDetails(id);
+    }
+
+    @GetMapping("/gateway/{id}")
+    public ResponseEntity<Product> getProductForGateway(
+            @PathVariable Integer id) {
+
+        Product product = new Product(
+                id,
+                "Laptop",
+                85000.0
+        );
+
+        return ResponseEntity.ok(product);
     }
 }
