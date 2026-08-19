@@ -1,82 +1,133 @@
 package com.distributed_mircorservice.orderservice.controller;
 
 import com.distributed_mircorservice.orderservice.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
 
     private final OrderService orderService;
-    private final ProductClient productClient;
 
-    public OrderController(OrderService orderService, ProductClient productClient) {
+    public OrderController(OrderService orderService) {
         this.orderService = orderService;
-        this.productClient = productClient;
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<String> getOrder(@PathVariable Integer id) {
-//
-//        String response = productClient.getProductById(id);
-//        System.out.println("Response from Product Service call from Order Service: " + response);
-//        return ResponseEntity.ok("Order call successful. " + response);
-//    }
+    // ============================================================
+    // 1. RestTemplate
+    // ============================================================
 
-    @GetMapping("/{id}")
-    public ResponseEntity<String> getOrder(@PathVariable Integer id) {
+    @GetMapping("/rest-template/{id}")
+    public ResponseEntity<String> getUsingRestTemplate(
+            @PathVariable Integer id) {
 
-        String response = orderService.getOrderDtl(id);
-        return ResponseEntity.ok("Order call successful. " + response);
+        String response = orderService.getUsingRestTemplate(id);
+
+        return ResponseEntity.ok(
+                "RestTemplate call successful. " + response
+        );
     }
 
-    @GetMapping("/loadBalancer/{id}")
-    public void getProductInfo(@PathVariable Integer id) {
-        orderService.invokeProductAPI(id);
+
+    // ============================================================
+    // 2. RestClient
+    // ============================================================
+
+    @GetMapping("/rest-client/{id}")
+    public ResponseEntity<String> getUsingRestClient(
+            @PathVariable Integer id) {
+
+        String response = orderService.getUsingRestClient(id);
+
+        return ResponseEntity.ok(
+                "RestClient call successful. " + response
+        );
     }
 
-    /****** Only Java based Http connection and API Request *******/
-//        HttpURLConnection httpURLConnection = null;
-//        try{
-//            String url = "http://localhost:8084/products/" + id;
-//            URL obj = new URL(url);
-//
-//            /* Create an object of HttpURLConnection,
-//             consider it like an envelope or request in which specify all the details like
-//              URL, Request Methods and time etc. */
-//            httpURLConnection = (HttpURLConnection) obj.openConnection();
-//
-//            // Set HTTP request Method and Headers
-//            httpURLConnection.setRequestMethod("GET");
-//            httpURLConnection.setRequestProperty("Accept", "application/json");
-//
-//            // Set time to established TCP connection, timeout in millisecond
-//            httpURLConnection.setConnectTimeout(100);
-//            httpURLConnection.setReadTimeout(10000);
-//
-//            // Opens TCP Connection for triggered the http request and read response.
-//            BufferedReader br = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-//            StringBuilder response = new StringBuilder();
-//            String responseLine;
-//            while ((responseLine = br.readLine()) != null){
-//                response.append(responseLine);
-//            }
-//            br.close();
-//            System.out.println("Response from server: " + response.toString());
-//
-//    } catch (Exception e){
-//        e.printStackTrace();
-//        } finally {
-//            if (httpURLConnection != null) {
-//                httpURLConnection.disconnect();
-//            }
-//        }
-//        return ResponseEntity.ok("Order call is successful. Response: " + response);
-//}
 
+    // ============================================================
+    // 3. ProductClient / Feign
+    // ============================================================
+
+    @GetMapping("/feign/{id}")
+    public ResponseEntity<String> getUsingFeign(
+            @PathVariable Integer id) {
+
+        String response = orderService.getUsingFeign(id);
+
+        return ResponseEntity.ok(
+                "Feign call successful. " + response
+        );
+    }
+
+
+    // ============================================================
+    // 4. RateLimiter
+    // ============================================================
+
+    @GetMapping("/rate-limiter/{id}")
+    public ResponseEntity<String> rateLimiter(
+            @PathVariable Integer id) {
+
+        String response = orderService.invokeWithRateLimiter(id);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    // ============================================================
+    // 5. Bulkhead
+    // ============================================================
+
+    @GetMapping("/bulkhead/{id}")
+    public ResponseEntity<String> bulkhead(
+            @PathVariable Integer id) {
+
+        String response = orderService.invokeWithBulkhead(id);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    // ============================================================
+    // 6. Annotation based Retry
+    // ============================================================
+
+    @GetMapping("/retry/{id}")
+    public ResponseEntity<String> retry(
+            @PathVariable Integer id) {
+
+        String response = orderService.invokeWithRetry(id);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    // ============================================================
+    // 7. Custom / Programmatic Retry
+    // ============================================================
+
+    @GetMapping("/custom-retry/{id}")
+    public ResponseEntity<String> customRetry(
+            @PathVariable Integer id) {
+
+        String response = orderService.invokeWithCustomRetry(id);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    // ============================================================
+    // 8. Java HttpURLConnection
+    // ============================================================
+
+    @GetMapping("/http-url-connection/{id}")
+    public ResponseEntity<String> httpUrlConnection(
+            @PathVariable Integer id) {
+
+        String response = orderService.invokeUsingHttpURLConnection(id);
+
+        return ResponseEntity.ok(response);
+    }
 }

@@ -1,20 +1,20 @@
 package com.distributed_mircorservice.orderservice.service;
 
 import com.distributed_mircorservice.orderservice.controller.ProductClient;
-import com.netflix.discovery.DiscoveryClient;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.Retry;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
-import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -27,115 +27,320 @@ public class OrderServiceImpl implements OrderService {
     @Value("${product.service.base-url}")
     private String baseUrl;
 
-    public OrderServiceImpl(RestTemplate restTemplate, RestClient restClient, ProductClient productClient, Retry customRetry) {
+
+    public OrderServiceImpl(
+            RestTemplate restTemplate,
+            RestClient restClient,
+            ProductClient productClient,
+            Retry customRetry) {
+
         this.restTemplate = restTemplate;
         this.restClient = restClient;
         this.productClient = productClient;
         this.customRetry = customRetry;
     }
 
-    // RestTemplate Synchronous Communication
+
+    // ============================================================
+    // 1. RestTemplate
+    // ============================================================
+
     @Override
-    public String getOrderDtl(Integer id) {
+    public String getUsingRestTemplate(Integer id) {
 
-//         invoke product API through RestTemple Approach
+        String response = restTemplate.getForObject(
+                baseUrl + "/products/{id}",
+                String.class,
+                id
+        );
 
-        String response = restTemplate.getForObject(baseUrl+ "/products/{id}", String.class, id); // RestTemplate
+        System.out.println(
+                "Response from Product Service using RestTemplate: "
+                        + response
+        );
 
-//        // RestClient request
-//        String response =  restClient
-//                .get()
-//                        .uri(baseUrl+ "/products/{id}", id)
-//                                .retrieve()
-//                                        .body(String.class);
-        System.out.println("Response from Product Service call from Order Service: " + response);
         return response;
     }
-//
-//    @Override
-//    // This is for RateLimiter Approach
-//    @RateLimiter(name = "productRateLimiter", fallbackMethod = "rateLimiterFallBack")
-//    public void invokeProductAPI(Integer id) {
-//        String response = productClient.getProductById(id);
-//        System.out.println("Response from Product Service call from Order Service: " + response);
-//    }
-
-//    public void rateLimiterFallBack(Integer id, Throwable ex) {
-//        System.out.println(
-//                "Rate limit exceeded for product id: " + id
-//        );
-//        System.out.println(
-//                "Exception: " + ex.getMessage()
-//        );
-//    }
-
-//    @Override
-//    // This is for Bulkhead Semaphore Approach
-//    @Bulkhead(name = "productService", type = Bulkhead.Type.SEMAPHORE, fallbackMethod = "bulkHeadFallBack")
-//    public void invokeProductAPI(Integer id) {
-//        String response = productClient.getProductById(id);
-//        System.out.println("Response from Product Service call from Order Service: " + response);
-//    }
-//
-//
-//
-//    public void bulkHeadFallBack(Integer id, Throwable ex) {
-//
-//        System.out.println("========== BULKHEAD FALLBACK ==========");
-//        System.out.println("Product ID: " + id);
-//        System.out.println("Exception: " + ex.getClass().getName());
-//        System.out.println("Message: " + ex.getMessage());
-//    }
 
 
-//    @Override
-//    // This is for Retry Approach
-//    @Retry(name = "productService", fallbackMethod = "retryFallBack")
-//    public void invokeProductAPI(Integer id) {
-//        String response = "";
-//        try {
-//            response  = productClient.getProductById(id); // For test this: do not start product service and then hit the API.
-//        } catch (Exception e){
-//            System.out.println("[" + LocalDateTime.now() + "] It is not able to invoke Product API");
-//            throw e;
-//        }
-//        System.out.println("Response from Product Service call from Order Service: " + response);
-//
-//
-//    }
+    // ============================================================
+    // 2. RestClient
+    // ============================================================
 
-    public void retryFallBack(Integer id, Throwable ex) {
+    @Override
+    public String getUsingRestClient(Integer id) {
 
-        System.out.println("========== Retry FALLBACK ==========");
-        System.out.println("Product ID: " + id);
-        System.out.println("Exception: " + ex.getClass().getName());
-        System.out.println("Message: " + ex.getMessage());
+        String response = restClient
+                .get()
+                .uri(baseUrl + "/products/{id}", id)
+                .retrieve()
+                .body(String.class);
+
+        System.out.println(
+                "Response from Product Service using RestClient: "
+                        + response
+        );
+
+        return response;
     }
 
 
-//    @Override
-//    // This is for Custom Retry Approach
-//    public void invokeProductAPI(Integer id) {
-//        try {
-//            customRetry.executeSupplier( () -> {
-//                System.out.println("Invoking Product API call from Order Service at: " + LocalDateTime.now());
-//                return productClient.getProductById(id);
-//            });
-//        } catch (Exception e){
-//            System.out.println("[" + LocalDateTime.now() + "] It is not able to invoke Product API. This is Fallback");
-////            throw e;
-//        }
-//    }
+    // ============================================================
+    // 3. Feign / ProductClient
+    // ============================================================
 
-        @Override
-    // This is for Circuit Breaker Approach
-        @CircuitBreaker(name = "productService", fallbackMethod = "circuitBreakerFallBack")
-        public void invokeProductAPI(Integer id) {
-            String response = productClient.getProductById(id);
+    @Override
+    public String getUsingFeign(Integer id) {
+
+        String response = productClient.getProductById(id);
+
+        System.out.println(
+                "Response from Product Service using ProductClient: "
+                        + response
+        );
+
+        return response;
+    }
+
+
+    // ============================================================
+    // 4. RateLimiter
+    // ============================================================
+
+    @Override
+    @RateLimiter(
+            name = "productRateLimiter",
+            fallbackMethod = "rateLimiterFallback"
+    )
+    public String invokeWithRateLimiter(Integer id) {
+
+        System.out.println(
+                "[" + LocalDateTime.now() +
+                        "] Calling Product Service using RateLimiter"
+        );
+
+        String response = productClient.getProductById(id);
+
+        return "Product API response: " + response;
+    }
+
+
+    public String rateLimiterFallback(
+            Integer id,
+            Throwable ex) {
+
+        System.out.println(
+                "========== RATE LIMITER FALLBACK =========="
+        );
+
+        System.out.println("Product ID: " + id);
+
+        System.out.println(
+                "Exception: " + ex.getClass().getName()
+        );
+
+        return "Rate limit exceeded for product id: " + id;
+    }
+
+
+    // ============================================================
+    // 5. Bulkhead - Semaphore
+    // ============================================================
+
+    @Override
+    @Bulkhead(
+            name = "productService",
+            type = Bulkhead.Type.SEMAPHORE,
+            fallbackMethod = "bulkheadFallback"
+    )
+    public String invokeWithBulkhead(Integer id) {
+
+        System.out.println(
+                "[" + LocalDateTime.now() +
+                        "] Calling Product Service using Bulkhead"
+        );
+
+        String response = productClient.getProductById(id);
+
+        return "Product API response: " + response;
+    }
+
+
+    public String bulkheadFallback(
+            Integer id,
+            Throwable ex) {
+
+        System.out.println(
+                "========== BULKHEAD FALLBACK =========="
+        );
+
+        System.out.println("Product ID: " + id);
+
+        System.out.println(
+                "Exception: " + ex.getClass().getName()
+        );
+
+        System.out.println(
+                "Message: " + ex.getMessage()
+        );
+
+        return "Bulkhead limit exceeded for product id: " + id;
+    }
+
+
+    // ============================================================
+    // 6. Annotation Based Retry
+    // ============================================================
+
+    @Override
+    @io.github.resilience4j.retry.annotation.Retry(
+            name = "productService",
+            fallbackMethod = "retryFallback"
+    )
+    public String invokeWithRetry(Integer id) {
+
+        System.out.println(
+                "[" + LocalDateTime.now() +
+                        "] Calling Product Service using Retry"
+        );
+
+        String response = productClient.getProductById(id);
+
+        return "Product API response: " + response;
+    }
+
+
+    public String retryFallback(
+            Integer id,
+            Throwable ex) {
+
+        System.out.println(
+                "========== RETRY FALLBACK =========="
+        );
+
+        System.out.println("Product ID: " + id);
+
+        System.out.println(
+                "Exception: " + ex.getClass().getName()
+        );
+
+        System.out.println(
+                "Message: " + ex.getMessage()
+        );
+
+        return "Product Service unavailable after retry attempts.";
+    }
+
+
+    // ============================================================
+    // 7. Custom / Programmatic Retry
+    // ============================================================
+
+    @Override
+    public String invokeWithCustomRetry(Integer id) {
+
+        try {
+
+            return customRetry.executeSupplier(() -> {
+
+                System.out.println(
+                        "[" + LocalDateTime.now() +
+                                "] Invoking Product API using Custom Retry"
+                );
+
+                return productClient.getProductById(id);
+
+            });
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "[" + LocalDateTime.now() +
+                            "] Product API failed. Custom Retry Fallback"
+            );
+
+            System.out.println(
+                    "Exception: " + e.getClass().getName()
+            );
+
+            return "Custom Retry fallback. Product Service unavailable.";
         }
+    }
 
-    public void circuitBreakerFallBack(Integer id, Throwable ex) {
-        System.out.println("========== Circuit Breaker FALLBACK ==========");
-        System.out.println("Product API failed: " + ex.getMessage());
+
+    // ============================================================
+    // 8. Java HttpURLConnection
+    // ============================================================
+
+    @Override
+    public String invokeUsingHttpURLConnection(Integer id) {
+
+        HttpURLConnection connection = null;
+
+        try {
+
+            String url =
+                    "http://localhost:8084/products/" + id;
+
+            URL obj = new URL(url);
+
+            connection =
+                    (HttpURLConnection) obj.openConnection();
+
+            // HTTP method
+            connection.setRequestMethod("GET");
+
+            // HTTP headers
+            connection.setRequestProperty(
+                    "Accept",
+                    "application/json"
+            );
+
+            // Connection timeout
+            connection.setConnectTimeout(1000);
+
+            // Read timeout
+            connection.setReadTimeout(10000);
+
+            // Execute request and read response
+            BufferedReader br =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    connection.getInputStream()
+                            )
+                    );
+
+            StringBuilder response =
+                    new StringBuilder();
+
+            String responseLine;
+
+            while ((responseLine = br.readLine()) != null) {
+
+                response.append(responseLine);
+            }
+
+            br.close();
+
+            System.out.println(
+                    "Response from Product Service using HttpURLConnection: "
+                            + response
+            );
+
+            return response.toString();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return "HttpURLConnection failed: "
+                    + e.getMessage();
+
+        } finally {
+
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
     }
 }
