@@ -3,6 +3,7 @@ package com.distributed_mircorservice.orderservice.service;
 import com.distributed_mircorservice.orderservice.controller.ProductClient;
 import com.netflix.discovery.DiscoveryClient;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,19 +113,29 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    @Override
-    // This is for Custom Retry Approach
-    public void invokeProductAPI(Integer id) {
-        try {
-            customRetry.executeSupplier( () -> {
-                System.out.println("Invoking Product API call from Order Service at: " + LocalDateTime.now());
-                return productClient.getProductById(id);
-            });
-        } catch (Exception e){
-            System.out.println("[" + LocalDateTime.now() + "] It is not able to invoke Product API. This is Fallback");
-//            throw e;
+//    @Override
+//    // This is for Custom Retry Approach
+//    public void invokeProductAPI(Integer id) {
+//        try {
+//            customRetry.executeSupplier( () -> {
+//                System.out.println("Invoking Product API call from Order Service at: " + LocalDateTime.now());
+//                return productClient.getProductById(id);
+//            });
+//        } catch (Exception e){
+//            System.out.println("[" + LocalDateTime.now() + "] It is not able to invoke Product API. This is Fallback");
+////            throw e;
+//        }
+//    }
+
+        @Override
+    // This is for Circuit Breaker Approach
+        @CircuitBreaker(name = "productService", fallbackMethod = "circuitBreakerFallBack")
+        public void invokeProductAPI(Integer id) {
+            String response = productClient.getProductById(id);
         }
 
-
+    public void circuitBreakerFallBack(Integer id, Throwable ex) {
+        System.out.println("========== Circuit Breaker FALLBACK ==========");
+        System.out.println("Product API failed: " + ex.getMessage());
     }
 }
