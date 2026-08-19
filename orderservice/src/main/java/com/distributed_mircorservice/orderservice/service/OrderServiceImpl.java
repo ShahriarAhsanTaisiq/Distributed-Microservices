@@ -2,6 +2,7 @@ package com.distributed_mircorservice.orderservice.service;
 
 import com.distributed_mircorservice.orderservice.controller.ProductClient;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.Retry;
 import org.springframework.beans.factory.annotation.Value;
@@ -193,6 +194,7 @@ public class OrderServiceImpl implements OrderService {
     // ============================================================
 
     @Override
+    //need two different Retry types in the same class.
     @io.github.resilience4j.retry.annotation.Retry(
             name = "productService",
             fallbackMethod = "retryFallback"
@@ -267,9 +269,52 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    // ============================================================
+    // 8. Circuit Breaker
+    // ============================================================
+
+    @Override
+    @CircuitBreaker(
+            name = "productService",
+            fallbackMethod = "circuitBreakerFallback"
+    )
+    public String invokeWithCircuitBreaker(Integer id) {
+
+        System.out.println(
+                "[" + LocalDateTime.now() +
+                        "] Calling Product Service using Circuit Breaker"
+        );
+
+        String response = productClient.getProductById(id);
+
+        return "Product API response: " + response;
+    }
+
+
+    public String circuitBreakerFallback(
+            Integer id,
+            Throwable ex) {
+
+        System.out.println(
+                "========== CIRCUIT BREAKER FALLBACK =========="
+        );
+
+        System.out.println("Product ID: " + id);
+
+        System.out.println(
+                "Exception: " + ex.getClass().getName()
+        );
+
+        System.out.println(
+                "Message: " + ex.getMessage()
+        );
+
+        return "Circuit Breaker fallback. Product Service is currently unavailable.";
+    }
+
 
     // ============================================================
-    // 8. Java HttpURLConnection
+    // 9. Java HttpURLConnection
     // ============================================================
 
     @Override

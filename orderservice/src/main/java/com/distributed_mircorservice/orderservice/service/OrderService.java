@@ -16,5 +16,7 @@ public interface OrderService {
 
     String invokeWithCustomRetry(Integer id);
 
+    String invokeWithCircuitBreaker(Integer id);
+
     String invokeUsingHttpURLConnection(Integer id);
 }

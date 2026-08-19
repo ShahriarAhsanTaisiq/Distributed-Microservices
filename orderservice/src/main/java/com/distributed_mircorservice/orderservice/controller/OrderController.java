@@ -118,9 +118,21 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    // ============================================================
+    // 8. Circuit Breaker
+    // ============================================================
+    @GetMapping("/circuit-breaker/{id}")
+    public ResponseEntity<String> invokeWithCircuitBreaker(
+            @PathVariable Integer id) {
+
+        String response = orderService.invokeWithCircuitBreaker(id);
+
+        return ResponseEntity.ok(response);
+    }
+
 
     // ============================================================
-    // 8. Java HttpURLConnection
+    // 9. Java HttpURLConnection
     // ============================================================
 
     @GetMapping("/http-url-connection/{id}")
