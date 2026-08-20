@@ -61,7 +61,7 @@ The projects in this repository are built by following official documentation, c
 ## 🚀 Getting Started
 
 ```bash
-git clone https://github.com/<your-username>/Distributed-Microservices.git
+git clone https://github.com/ShahriarAhsanTaisiq/Distributed-Microservices.git
 cd Distributed-Microservices
 ```
 
